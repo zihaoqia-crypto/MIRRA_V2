@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIRRA | Visual Facial Architecture Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;700&family=Playfair+Display:ital,wght@1,400;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --fg: #ffffff;
+            --accent: #00f2ff;
+            --warning: #ffde00;
+            --critical: #ff3b3b;
+            --positive: #00b8ff;
+            --muted: #444;
+            --panel: rgba(255,255,255,0.03);
+            --ease: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--fg); 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased;
+            cursor: crosshair;
+        }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--muted); }
+
+        .infra-grid {
+            position: fixed; 
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none; 
+            z-index: 0;
+        }
+
+        .scan-line {
+            position: fixed;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.3;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        @keyframes scan { 
+            0% { top: 0; } 
+            100% { top: 100%; } 
+        }
+
+        section {
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8vh 8vw;
+        }
+
+        /* === HERO SECTION === */
+        .hero-section {
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-header {
+            position: fixed;
+            top: 2rem;
+            left: 8vw;
+            right: 8vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 1000;
+        }
+
+        .sub-label { 
+            font-size: 0.65rem; 
+            letter-spacing: 0.6em; 
+            text-transform: uppercase; 
+            color: var(--accent); 
+            margin-bottom: 1rem; 
+            display: block; 
+            opacity: 0;
+            animation: fadeInUp 1s var(--ease) forwards;
+        }
+
+        .hero-title { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 15vw; 
+            font-style: italic; 
+            font-weight: 900; 
+            line-height: 0.75; 
+            letter-spacing: -0.05em; 
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1.2s var(--ease) 0.3s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+            from { transform: translateY(30px); }
+        }
+
+        .system-status {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.6rem;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 6vw;
+            align-items: center;
+            width: 100%;
+            max-width: 1600px;
+            margin-top: 12vh;
+        }
+
+        .hero-text h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3vw;
+            font-weight: 100;
+            margin-bottom: 2rem;
+            line-height: 1.2;
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #aaa;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Clean hero visual - no annotations, just image */
+        .hero-visual-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .hero-image-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 3/4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-face-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.15s ease-out;
+            opacity: 1;
+        }
+
+        .hero-face-image.fade-out {
+            opacity: 0;
+        }
+
+        /* Clean button styling */
+        .optimize-trigger {
+            padding: 1.2rem 3rem;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s var(--ease);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .optimize-trigger::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--accent);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .optimize-trigger:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .optimize-trigger:hover {
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.6);
+        }
+
+        .optimize-trigger.pressed {
+            transform: scale(0.98);
+            box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        .optimize-trigger span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* === COMPARISON SECTION === */
+        .comparison-section {
+            background: var(--bg);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 1.2s var(--ease);
+        }
+
+        .comparison-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .comparison-container {
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        .comparison-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .comparison-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4vw;
+            font-weight: 100;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-header p {
+            font-size: 1.1rem;
+            color: #888;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Before/After slider container */
+        .comparison-slider {
+            position: relative;
+            width: 100%;
+            height: 85vh;
+            max-height: 1100px;
+            overflow: hidden;
+            border: 1px solid var(--muted);
+            margin-top: 3rem;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 1s var(--ease) 0.3s;
+            background: var(--bg);
+            cursor: ew-resize;
+        }
+
+        .comparison-section.visible .comparison-slider {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .comparison-slider:hover {
+            border-color: var(--accent);
+        }
+
+        /* Base layer - Lens distortion (left side, always visible as background) */
+        .comparison-base {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .comparison-base img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Overlay layer - MIRRA view (right side, clipped by slider position) */
+        .comparison-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            clip-path: inset(0 50% 0 0);
+            transition: none;
+        }
+
+        .comparison-overlay img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Divider line */
+        .comparison-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 3px;
+            background: var(--accent);
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+            pointer-events: none;
+            z-index: 10;
+            transition: none;
+        }
+
+        /* Slider handle (draggable control) */
+        .comparison-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: ew-resize;
+            z-index: 11;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.8);
+            transition: transform 0.2s var(--ease);
+            pointer-events: all;
+        }
+
+        .comparison-handle:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .comparison-handle::before {
+            content: '⟷';
+            color: #000;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .comparison-labels {
+            position: absolute;
+            bottom: 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 3rem;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .label-left, .label-right {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--accent);
+        }
+
+        /* === PITCH DECK === */
+        .pitch-section {
+            background: var(--accent);
+            color: #000;
+            border-top: 1px solid var(--accent);
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 1.2s var(--ease);
+        }
+
+        .pitch-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .pitch-content {
+            width: 100%;
+            max-width: 1400px;
+            text-align: center;
+        }
+
+        .pitch-content .sub-label {
+            color: rgba(0, 0, 0, 0.5);
+            opacity: 1;
+        }
+
+        .pitch-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 6vw;
+            font-weight: 900;
+            line-height: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .pitch-content p {
+            font-size: 1.3rem;
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            opacity: 0.8;
+        }
+
+        .pitch-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .stat-item {
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            transition: all 0.4s var(--ease);
+        }
+
+        .stat-item:hover {
+            background: rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        /* === STYLE TRANSFER === */
+        .style-section {
+            background: var(--bg);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 1.2s var(--ease);
+        }
+
+        .style-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .style-container {
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        .style-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .style-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4vw;
+            font-weight: 100;
+            margin-bottom: 1.5rem;
+        }
+
+        .style-demo {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr 60px 1fr;
+            gap: 0;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s var(--ease) 0.4s;
+        }
+
+        .style-section.visible .style-demo {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .style-slot {
+            position: relative;
+            aspect-ratio: 3/4;
+            border: 1px solid var(--muted);
+            overflow: hidden;
+            transition: all 0.4s var(--ease);
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .style-slot:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .style-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .style-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--accent);
+            text-transform: uppercase;
+        }
+
+        .style-result {
+            opacity: 0.3;
+            filter: blur(20px);
+            transition: all 1s var(--ease);
+        }
+
+        .style-result.revealed {
+            opacity: 1;
+            filter: blur(0);
+        }
+
+        .transfer-arrow {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--accent);
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .transfer-arrow.plus::before {
+            content: '+';
+        }
+
+        .transfer-arrow.equals::before {
+            content: '=';
+        }
+
+        .style-controls {
+            margin-top: 3rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1.2rem 3rem;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s var(--ease);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--accent);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn:hover {
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.6);
+        }
+
+        .btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* === FACIAL ADJUSTMENT - DEFORMABLE MESH === */
+        .adjustment-section {
+            background: var(--bg);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 1.2s var(--ease);
+        }
+
+        .adjustment-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .adjustment-container {
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        .adjustment-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .adjustment-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4vw;
+            font-weight: 100;
+            margin-bottom: 1.5rem;
+        }
+
+        .adjustment-workspace {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 4rem;
+            align-items: start;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s var(--ease) 0.4s;
+        }
+
+        .adjustment-section.visible .adjustment-workspace {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .adjustment-canvas-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/5;
+        }
+
+        .adjustment-canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            border: 1px solid var(--muted);
+            overflow: hidden;
+            transition: border-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .adjustment-canvas:hover {
+            border-color: var(--accent);
+        }
+
+        .adjustment-canvas img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+        }
+
+        /* Deformable grid overlay - subtle version */
+        .deformable-grid {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .grid-line {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 0.25;
+            opacity: 0.237;
+            transition: opacity 0.3s;
+        }
+
+        .grid-line.red-line {
+            stroke: var(--critical);
+            opacity: 0.5;
+        }
+
+        .adjustment-canvas:hover .grid-line {
+            opacity: 0.396;
+        }
+
+        .adjustment-canvas:hover .grid-line.red-line {
+            opacity: 0.75;
+        }
+
+        .grid-node {
+            fill: var(--accent);
+            stroke: none;
+            cursor: grab;
+            pointer-events: all;
+            transition: all 0.2s;
+            r: 1.5;
+            opacity: 0.7;
+        }
+
+        .grid-node:hover {
+            fill: var(--warning);
+            r: 3;
+            opacity: 1;
+            cursor: grabbing;
+            filter: drop-shadow(0 0 3px var(--warning));
+        }
+
+        .grid-node.dragging {
+            fill: var(--warning);
+            r: 3.5;
+            opacity: 1;
+            cursor: grabbing;
+            filter: drop-shadow(0 0 5px var(--warning));
+        }
+
+        .grid-node.red-point {
+            fill: var(--critical);
+            opacity: 1;
+            filter: drop-shadow(0 0 4px var(--critical));
+        }
+
+        .grid-node.red-point:hover {
+            fill: var(--critical);
+        }
+
+        .grid-node.blue-point {
+            fill: var(--positive);
+            opacity: 1;
+            filter: drop-shadow(0 0 4px var(--positive));
+        }
+
+        .grid-node.blue-point:hover {
+            fill: var(--positive);
+        }
+
+        .grid-line.blue-line {
+            stroke: var(--positive);
+            opacity: 0.5;
+        }
+
+        .adjustment-canvas:hover .grid-line.blue-line {
+            opacity: 0.75;
+        }
+
+        /* Control panel on the side */
+        .adjustment-controls {
+            padding: 2.5rem;
+            background: var(--panel);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .adjustment-controls h3 {
+            font-size: 1.2rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            font-family: 'Playfair Display', serif;
+        }
+
+        .control-section {
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-label {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .feature-btn {
+            padding: 1rem;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            color: var(--accent);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s var(--ease);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--accent);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+
+        .feature-btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        .feature-btn:hover {
+            border-color: var(--accent);
+            color: #000;
+        }
+
+        .feature-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+
+        .feature-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .adjustment-slider-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #888;
+        }
+
+        .slider-value {
+            color: var(--accent);
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            appearance: none;
+            background: #222;
+            height: 2px;
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        input[type="range"]:hover {
+            background: #333;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 8px;
+            background: var(--accent);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 1px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            height: 12px;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 8px;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            border-radius: 1px;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            height: 12px;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .info-display {
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: var(--accent);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            line-height: 1.6;
+        }
+
+        .info-display span {
+            color: var(--warning);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 1rem;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            color: var(--accent);
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        /* Footer */
+        footer {
+            padding: 8vh 8vw;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        .footer-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 8vw;
+            font-style: italic;
+            color: rgba(255,255,255,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            font-size: 0.7rem;
+            color: #444;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 4rem;
+            }
+
+            .adjustment-workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .style-demo {
+                grid-template-columns: 1fr;
+            }
+
+            .transfer-arrow {
+                transform: rotate(90deg);
+                margin: 2rem 0;
+            }
+
+            .pitch-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="infra-grid"></div>
+    <div class="scan-line"></div>
+
+    <!-- Fixed Header -->
+    <div class="hero-header">
+        <div>
+            <span class="sub-label">Interface v7.0 // Unified Protocol</span>
+        </div>
+        <div class="system-status">
+            ENCRYPTED_LINK: <span style="color: var(--warning);">ESTABLISHED</span><br>
+            MODEL_TYPE: STRUCTURAL_COGNITION<br>
+            LATENCY: <span id="latency">0.002</span>MS
+        </div>
+    </div>
+
+    <!-- === HERO SECTION - CLEAN VERSION === -->
+    <section class="hero-section">
+        <h1 class="hero-title">MIRRA</h1>
+        
+        <div class="hero-content">
+            <div class="hero-text">
+                <h2>The Architecture of Self-Perception</h2>
+                <p>
+                    MIRRA creates a mathematical twin of your face using advanced 3D modeling. Explore your facial structure from any angle, understand asymmetries objectively, and see how different perspectives affect your appearance.
+                </p>
+                <p>
+                    Not a filter. Not medical advice. A cognitive tool for understanding before deciding.
+                </p>
+            </div>
+
+            <div class="hero-visual-container">
+                <div class="hero-image-wrapper">
+                    <img src="p1-1.PNG" 
+                         alt="Face analysis" 
+                         class="hero-face-image" 
+                         id="hero-face">
+                </div>
+
+                <button class="optimize-trigger" 
+                        id="optimize-btn"
+                        onmousedown="showOptimized()" 
+                        onmouseup="showOriginal()"
+                        onmouseleave="showOriginal()">
+                    <span>HOLD TO VIEW OPTIMIZATION</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- === LENS VS MIRRA COMPARISON === -->
+    <section class="comparison-section" data-scroll-trigger>
+        <div class="comparison-container">
+            <div class="comparison-header">
+                <span class="sub-label">01 // Perspective Paradox</span>
+                <h2>Camera Distortion vs. True Reality</h2>
+                <p>
+                    Traditional camera lenses create optical distortion. MIRRA uses 3D modeling to show your true facial structure, free from lens compression artifacts.
+                </p>
+            </div>
+
+            <div class="comparison-slider" id="comparison-slider">
+                <!-- Base layer: MIRRA view (right side, always visible as background) -->
+                <div class="comparison-base">
+                    <img src="faceA.jpg" alt="MIRRA true perspective">
+                </div>
+                
+                <!-- Overlay layer: Lens distortion (left side, clipped) -->
+                <div class="comparison-overlay" id="comparison-overlay">
+                    <img src="Face85.jpg" alt="Camera lens distortion">
+                </div>
+
+                <!-- Divider line -->
+                <div class="comparison-divider" id="comparison-divider"></div>
+
+                <!-- Draggable handle -->
+                <div class="comparison-handle" id="comparison-handle"></div>
+
+                <div class="comparison-labels">
+                    <div class="label-left">LENS DISTORTION (85MM)</div>
+                    <div class="label-right">MIRRA TRUE STRUCTURE</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- === PITCH DECK === -->
+    <section class="pitch-section" data-scroll-trigger>
+        <div class="pitch-content">
+            <span class="sub-label">Positioning Statement</span>
+            <h2>WE ARE NOT A CLINIC.<br>WE ARE THE ARCHITECTURE<br>OF SELF-PERCEPTION.</h2>
+            <p>
+                MIRRA doesn't recommend procedures or treatments. We provide the cognitive infrastructure to understand your facial structure objectively, before any decisions are made.
+            </p>
+
+            <div class="pitch-stats">
+                <div class="stat-item">
+                    <div class="stat-number">3D</div>
+                    <div class="stat-label">Mathematical Modeling</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Perspectives Available</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Medical Recommendations</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- === STYLE TRANSFER === -->
+    <section class="style-section" data-scroll-trigger>
+        <div class="style-container">
+            <div class="style-header">
+                <span class="sub-label">02 // Persona Transference</span>
+                <h2>Structural Style Transfer</h2>
+                <p style="max-width: 800px; margin: 0 auto; color: #888; font-size: 1.1rem;">
+                    Analyze how aesthetic qualities from reference faces translate to your unique structure. Not replication—geometric compatibility analysis.
+                </p>
+            </div>
+
+            <div class="style-demo">
+                <div class="style-slot">
+                    <img src="p4-0.jpg" alt="Original">
+                    <div class="style-label">Original Subject</div>
+                </div>
+
+                <div class="transfer-arrow plus"></div>
+
+                <div class="style-slot">
+                    <img src="kim.jpg" alt="Reference">
+                    <div class="style-label">Reference Style</div>
+                </div>
+
+                <div class="transfer-arrow equals"></div>
+
+                <div class="style-slot style-result" id="style-result">
+                    <img src="p4-3.png" alt="Result">
+                    <div class="style-label">Transfer Result</div>
+                </div>
+            </div>
+
+            <div class="style-controls">
+                <button class="btn" id="transfer-btn" onclick="executeTransfer()">
+                    <span>EXECUTE STYLE TRANSFER</span>
+                </button>
+                <button class="btn hidden" id="restore-btn" onclick="restoreOriginal()">
+                    <span>RESTORE ORIGINAL</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- === FACIAL ADJUSTMENT - DEFORMABLE GRID === -->
+    <section class="adjustment-section" data-scroll-trigger>
+        <div class="adjustment-container">
+            <div class="adjustment-header">
+                <span class="sub-label">03 // Structural Refinement</span>
+                <h2>Interactive Deformable Mesh</h2>
+                <p style="max-width: 800px; margin: 0 auto; color: #888; font-size: 1.1rem;">
+                    Drag any grid node to deform the facial structure. Or use feature-specific controls to adjust eyes, nose, and mouth precisely.
+                </p>
+            </div>
+
+            <div class="adjustment-workspace">
+                <div class="adjustment-canvas-wrapper">
+                    <div class="adjustment-canvas">
+                        <img src="faceA.jpg" alt="Face for adjustment">
+                        
+                        <!-- Deformable grid overlay -->
+                        <svg class="deformable-grid" id="deformable-grid" viewBox="0 0 400 500">
+                            <!-- Grid will be generated by JavaScript -->
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="adjustment-controls">
+                    <h3>Facial Features</h3>
+                    
+                    <div class="control-section">
+                        <span class="control-label">Select Feature</span>
+                        <div class="feature-buttons">
+                            <button class="feature-btn" onclick="selectFeature('eyes')">
+                                <span>Eyes</span>
+                            </button>
+                            <button class="feature-btn" onclick="selectFeature('nose')">
+                                <span>Nose</span>
+                            </button>
+                            <button class="feature-btn" onclick="selectFeature('mouth')">
+                                <span>Mouth</span>
+                            </button>
+                            <button class="feature-btn" onclick="selectFeature('jaw')">
+                                <span>Jawline</span>
+                            </button>
+                            <button class="feature-btn" onclick="selectFeature('cheeks')">
+                                <span>Cheeks</span>
+                            </button>
+                            <button class="feature-btn" onclick="selectFeature('forehead')">
+                                <span>Forehead</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-section" id="feature-controls">
+                        <h3 style="font-size: 1rem; margin-bottom: 1.5rem;">Adjustment Controls</h3>
+                        
+                        <div class="adjustment-slider-group">
+                            <div class="slider-label">
+                                <span>Position</span>
+                                <span class="slider-value" id="position-val">0</span>
+                            </div>
+                            <input type="range" id="position-slider" min="-20" max="20" value="0">
+                        </div>
+
+                        <div class="adjustment-slider-group">
+                            <div class="slider-label">
+                                <span>Size</span>
+                                <span class="slider-value" id="size-val">0</span>
+                            </div>
+                            <input type="range" id="size-slider" min="-20" max="20" value="0">
+                        </div>
+
+                        <div class="adjustment-slider-group">
+                            <div class="slider-label">
+                                <span>Angle</span>
+                                <span class="slider-value" id="angle-val">0°</span>
+                            </div>
+                            <input type="range" id="angle-slider" min="-15" max="15" value="0">
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="info-display">
+                            MESH DENSITY: <span id="grid-density">8x10</span><br>
+                            MODIFICATIONS: <span id="mod-count">0</span><br>
+                            ACTIVE FEATURE: <span id="active-feature">NONE</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="resetAdjustments()">RESET ALL</button>
+                            <button class="action-btn" onclick="savePreset()">SAVE PRESET</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <h2 class="footer-title">MIRRA</h2>
+        <div class="footer-info">
+            <span>EST 2026 // GLOBAL INFRASTRUCTURE</span>
+            <span>NON-MEDICAL // COGNITIVE ONLY</span>
+            <span>UNDERSTANDING BEFORE DECIDING</span>
+        </div>
+    </footer>
+
+    <script>
+        // Latency simulation
+        setInterval(() => {
+            document.getElementById('latency').textContent = (Math.random() * 0.005).toFixed(3);
+        }, 2000);
+
+        // Scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('[data-scroll-trigger]').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Hero optimization - hold to view (instant swap, minimal transition)
+        const heroFace = document.getElementById('hero-face');
+        const optimizeBtn = document.getElementById('optimize-btn');
+        
+        const originalImage = 'p1-1.png';
+        const optimizedImage = 'p1-4.png';
+        
+        function showOptimized() {
+            optimizeBtn.classList.add('pressed');
+            heroFace.classList.add('fade-out');
+            
+            setTimeout(() => {
+                heroFace.src = optimizedImage;
+                heroFace.classList.remove('fade-out');
+            }, 150);
+        }
+        
+        function showOriginal() {
+            optimizeBtn.classList.remove('pressed');
+            heroFace.classList.add('fade-out');
+            
+            setTimeout(() => {
+                heroFace.src = originalImage;
+                heroFace.classList.remove('fade-out');
+            }, 150);
+        }
+
+        // Comparison slider - draggable before/after with fixed images
+        const compSlider = document.getElementById('comparison-slider');
+        const compOverlay = document.getElementById('comparison-overlay');
+        const compDivider = document.getElementById('comparison-divider');
+        const compHandle = document.getElementById('comparison-handle');
+        
+        let isDragging = false;
+
+        function updateComparison(clientX) {
+            const sliderRect = compSlider.getBoundingClientRect();
+            
+            // Calculate position as percentage
+            const x = clientX - sliderRect.left;
+            const percentage = Math.max(0, Math.min(100, (x / sliderRect.width) * 100));
+            
+            // Update overlay clip-path
+            // Overlay contains lens distortion (left side)
+            // clip-path: inset(top right bottom left)
+            // We want to show the LEFT part of the overlay, so clip from the RIGHT
+            compOverlay.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+            
+            // Update divider position
+            compDivider.style.left = `${percentage}%`;
+            
+            // Update handle position
+            compHandle.style.left = `${percentage}%`;
+        }
+
+        // Mouse down - start dragging
+        compSlider.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateComparison(e.clientX);
+            e.preventDefault();
+        });
+
+        // Mouse move - update if dragging
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                updateComparison(e.clientX);
+            }
+        });
+
+        // Mouse up - stop dragging
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Touch support for mobile
+        compSlider.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            if (e.touches.length > 0) {
+                updateComparison(e.touches[0].clientX);
+            }
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length > 0) {
+                updateComparison(e.touches[0].clientX);
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Style transfer with restore functionality
+        let isTransferred = false;
+        
+        function executeTransfer() {
+            const result = document.getElementById('style-result');
+            const transferBtn = document.getElementById('transfer-btn');
+            const restoreBtn = document.getElementById('restore-btn');
+            
+            result.classList.add('revealed');
+            transferBtn.classList.add('hidden');
+            restoreBtn.classList.remove('hidden');
+            isTransferred = true;
+        }
+        
+        function restoreOriginal() {
+            const result = document.getElementById('style-result');
+            const transferBtn = document.getElementById('transfer-btn');
+            const restoreBtn = document.getElementById('restore-btn');
+            
+            result.classList.remove('revealed');
+            transferBtn.classList.remove('hidden');
+            restoreBtn.classList.add('hidden');
+            isTransferred = false;
+        }
+
+        // === ANATOMICAL FACIAL GRID SYSTEM ===
+        const gridSvg = document.getElementById('deformable-grid');
+        let modCount = 0;
+        let currentFeature = null;
+        
+        // 原有点位，仅纵向压缩 (y×0.82) 修正整体被拉长的问题，连线不变
+        const yScale = 0.82, yBase = 110;
+        const yMin = 110, yMax = 404.5, totalLength = yMax - yMin;
+        const crownYOffset = totalLength / 10;
+        const facialPointsRaw = [
+            // FOREHEAD REGION - 最高点crown上移1/10，两侧新增弧线辅助点
+            { x: 200, y: 110 - crownYOffset, label: 'crown' },
+            { x: 179, y: 110 - crownYOffset + 14, label: 'crown-arc-left' },
+            { x: 221, y: 110 - crownYOffset + 14, label: 'crown-arc-right' },
+            { x: 158, y: 131, label: 'forehead-left' },
+            { x: 242, y: 131, label: 'forehead-right' },
+            { x: 200, y: 145, label: 'forehead-center' },
+            // 以上 crown-arc 与 forehead 形成弧线
+            
+            // TEMPLE REGION (太阳穴，完全对称)
+            { x: 137, y: 166, label: 'temple-left' },
+            { x: 263, y: 166, label: 'temple-right' },
+            
+            // EYEBROW REGION (眉毛在面部1/3处，完全对称)
+            { x: 172, y: 180, label: 'brow-left-inner' },
+            { x: 151, y: 179, label: 'brow-left-arch' },
+            { x: 228, y: 180, label: 'brow-right-inner' },
+            { x: 249, y: 179, label: 'brow-right-arch' },
+            
+            // EYE REGION (眼睛位置，间距=眼宽，完全对称)
+            { x: 175.5, y: 197.5, label: 'eye-left-inner' },
+            { x: 152.5, y: 197.5, label: 'eye-left-outer' },
+            { x: 224.5, y: 197.5, label: 'eye-right-inner' },
+            { x: 247.5, y: 197.5, label: 'eye-right-outer' },
+            
+            // UPPER CHEEKBONE (颧骨，完全对称)
+            { x: 143.5, y: 218.5, label: 'cheekbone-left-upper' },
+            { x: 256.5, y: 218.5, label: 'cheekbone-right-upper' },
+            
+            // NOSE BRIDGE (鼻梁在中轴线，面部2/3处)
+            { x: 200, y: 233, label: 'nose-bridge-upper' },
+            { x: 200, y: 257.5, label: 'nose-bridge-mid' },
+            
+            // MID-FACE / CHEEK REGION (脸颊完全对称)
+            { x: 133.5, y: 271.5, label: 'cheek-left-prominence' },
+            { x: 266.5, y: 271.5, label: 'cheek-right-prominence' },
+            { x: 200, y: 278.5, label: 'nose-bridge-lower' },
+            
+            // NOSE TIP & NOSTRILS (鼻尖居中，鼻翼完全对称，宽度≈眼宽)
+            { x: 200, y: 296, label: 'nose-tip' },
+            { x: 186, y: 299.5, label: 'nostril-left' },
+            { x: 214, y: 299.5, label: 'nostril-right' },
+            
+            // NASOLABIAL REGION (法令纹，完全对称)
+            { x: 168.5, y: 306.5, label: 'nasolabial-left' },
+            { x: 231.5, y: 306.5, label: 'nasolabial-right' },
+            
+            // UPPER LIP REGION (上唇，人中居中，完全对称)
+            { x: 200, y: 320.5, label: 'philtrum' },
+            { x: 179, y: 327.5, label: 'upper-lip-left' },
+            { x: 221, y: 327.5, label: 'upper-lip-right' },
+            
+            // MOUTH CORNERS (嘴角，完全对称，宽度=两瞳孔间距)
+            { x: 168.5, y: 338, label: 'mouth-corner-left' },
+            { x: 231.5, y: 338, label: 'mouth-corner-right' },
+            
+            // LOWER LIP (下唇，完全对称)
+            { x: 200, y: 345, label: 'lower-lip-center' },
+            { x: 182.5, y: 347.1, label: 'lower-lip-left' },
+            { x: 217.5, y: 347.1, label: 'lower-lip-right' },
+            
+            // CHIN REGION (下巴在中轴线，面部最后1/3)
+            { x: 200, y: 362.5, label: 'chin-upper' },
+            { x: 200, y: 383.5, label: 'chin-center' },
+            { x: 200, y: 404.5, label: 'chin-lower' },
+            
+            // JAWLINE (下颌线，完全对称的流畅曲线)
+            { x: 156, y: 348.5, label: 'jaw-left-upper' },
+            { x: 244, y: 348.5, label: 'jaw-right-upper' },
+            { x: 149, y: 369.5, label: 'jaw-left-mid' },
+            { x: 251, y: 369.5, label: 'jaw-right-mid' },
+            { x: 159, y: 387, label: 'jaw-left-lower' },
+            { x: 241, y: 387, label: 'jaw-right-lower' },
+            { x: 178, y: 401, label: 'jaw-left-angle' },
+            { x: 222, y: 401, label: 'jaw-right-angle' },
+            
+            // OUTER FACE CONTOUR (外轮廓，完全对称)
+            { x: 137, y: 216, label: 'face-left-upper' },
+            { x: 263, y: 216, label: 'face-right-upper' },
+            { x: 130, y: 289, label: 'face-left-mid' },
+            { x: 270, y: 289, label: 'face-right-mid' },
+            { x: 133.5, y: 327.5, label: 'face-left-lower' },
+            { x: 266.5, y: 327.5, label: 'face-right-lower' }
+        ];
+        const xMax = Math.max(...facialPointsRaw.map(p => p.x));
+        const xShift = (x) => 0.3 * (xMax - x);
+        const faceCenterX = 200;
+        const leftBottomInward = (p) => (p.x < faceCenterX && p.y > 200) ? p.x + 0.1 * (faceCenterX - p.x) : p.x;
+        const facialPoints = facialPointsRaw.map(p => {
+            const y = yBase + (p.y - yBase) * yScale;
+            const rawX = leftBottomInward(p);
+            const x = rawX - xShift(rawX);
+            return { x, y, label: p.label };
+        });
+
+        const gridNodes = facialPoints.map((point, index) => ({
+            x: point.x,
+            y: point.y,
+            originalX: point.x,
+            originalY: point.y,
+            label: point.label,
+            index: index
+        }));
+
+        const redPointLabels = ['jaw-left-angle', 'jaw-left-lower', 'jaw-left-mid', 'jaw-left-upper', 'face-left-upper', 'face-left-mid', 'face-left-lower', 'mouth-corner-left', 'lower-lip-left', 'temple-left'];
+        const bluePointLabels = ['chin-upper', 'chin-center', 'chin-lower'];
+
+        // 按 section 分组优化的连线
+        const facialConnections = [
+            [0, 1], [0, 2], [1, 3], [2, 4], [1, 5], [2, 5], [3, 5], [4, 5], [3, 6], [4, 7], [5, 6], [5, 7],
+            [6, 8], [6, 9], [7, 10], [7, 11], [8, 9], [10, 11], [8, 10],
+            [9, 12], [9, 13], [11, 14], [11, 15], [12, 13], [14, 15], [8, 12], [10, 14],
+            [13, 16], [15, 17], [12, 16], [14, 17], [16, 17],
+            [8, 18], [10, 18], [16, 20], [17, 21], [18, 19], [18, 20], [18, 21], [19, 20], [19, 21],
+            [20, 22], [21, 22], [21, 23], [22, 24], [22, 25], [23, 24], [23, 25], [24, 25],
+            [22, 26], [23, 26], [24, 27], [25, 28], [26, 27], [26, 28], [27, 28],
+            [27, 29], [28, 30], [29, 30], [24, 29], [25, 30],
+            [29, 31], [30, 31], [31, 32], [31, 33], [29, 32], [30, 33], [32, 33],
+            [31, 34], [32, 34], [33, 34], [33, 35], [34, 35],
+            [34, 36], [35, 36],
+            [29, 37], [30, 38], [31, 37], [32, 37], [37, 39], [38, 40], [39, 41], [40, 42], [41, 43], [42, 44], [43, 36], [44, 36], [43, 44], [37, 38], [39, 40], [41, 42],
+            [6, 47], [7, 48], [9, 47], [11, 48], [13, 47], [15, 48],
+            [47, 49], [48, 50], [16, 49], [17, 50], [20, 49], [21, 50],
+            [49, 51], [50, 52], [51, 37], [52, 38],
+            [47, 48], [49, 50], [51, 52], [16, 21], [17, 20], [39, 43], [40, 44]
+        ];
+
+        // Draw anatomical facial grid
+        function drawGrid() {
+            let gridHTML = '';
+            const redSet = new Set(gridNodes.map((n, i) => redPointLabels.includes(n.label) ? i : -1).filter(i => i >= 0));
+            const blueSet = new Set(gridNodes.map((n, i) => bluePointLabels.includes(n.label) ? i : -1).filter(i => i >= 0));
+
+            facialConnections.forEach(([startIdx, endIdx]) => {
+                if (gridNodes[startIdx] && gridNodes[endIdx]) {
+                    const start = gridNodes[startIdx];
+                    const end = gridNodes[endIdx];
+                    const isRedLine = redSet.has(startIdx) && redSet.has(endIdx);
+                    const isBlueLine = blueSet.has(startIdx) && blueSet.has(endIdx);
+                    const lineClass = isRedLine ? ' red-line' : (isBlueLine ? ' blue-line' : '');
+                    gridHTML += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" class="grid-line${lineClass}"/>`;
+                }
+            });
+
+            gridNodes.forEach((node, index) => {
+                const isRed = redPointLabels.includes(node.label);
+                const isBlue = bluePointLabels.includes(node.label);
+                const pointClass = isRed ? ' red-point' : (isBlue ? ' blue-point' : '');
+                gridHTML += `<circle cx="${node.x}" cy="${node.y}" 
+                            class="grid-node${pointClass}" data-index="${index}"
+                            data-label="${node.label}"/>`;
+            });
+            
+            gridSvg.innerHTML = gridHTML;
+            
+            // Add drag listeners to nodes
+            document.querySelectorAll('.grid-node').forEach(node => {
+                node.addEventListener('mousedown', startDrag);
+            });
+        }
+
+        // Drag functionality
+        let draggedNode = null;
+        let dragIndex = -1;
+
+        function startDrag(e) {
+            draggedNode = e.target;
+            dragIndex = parseInt(draggedNode.dataset.index);
+            draggedNode.classList.add('dragging');
+            e.preventDefault();
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (draggedNode && dragIndex >= 0) {
+                const rect = gridSvg.getBoundingClientRect();
+                const svgX = ((e.clientX - rect.left) / rect.width) * 400;
+                const svgY = ((e.clientY - rect.top) / rect.height) * 500;
+                
+                // Constrain movement to reasonable range
+                const dx = Math.max(-30, Math.min(30, svgX - gridNodes[dragIndex].originalX));
+                const dy = Math.max(-30, Math.min(30, svgY - gridNodes[dragIndex].originalY));
+                
+                // Update node position
+                gridNodes[dragIndex].x = gridNodes[dragIndex].originalX + dx;
+                gridNodes[dragIndex].y = gridNodes[dragIndex].originalY + dy;
+                
+                // Influence neighboring connected nodes (elastic deformation)
+                facialConnections.forEach(([idx1, idx2]) => {
+                    if (idx1 === dragIndex || idx2 === dragIndex) {
+                        const neighborIdx = idx1 === dragIndex ? idx2 : idx1;
+                        const neighbor = gridNodes[neighborIdx];
+                        
+                        const distX = Math.abs(neighbor.originalX - gridNodes[dragIndex].originalX);
+                        const distY = Math.abs(neighbor.originalY - gridNodes[dragIndex].originalY);
+                        const distance = Math.sqrt(distX * distX + distY * distY);
+                        
+                        const influence = Math.max(0, 1 - distance / 100);
+                        
+                        neighbor.x = neighbor.originalX + dx * influence * 0.5;
+                        neighbor.y = neighbor.originalY + dy * influence * 0.5;
+                    }
+                });
+                
+                drawGrid();
+                modCount++;
+                document.getElementById('mod-count').textContent = modCount;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (draggedNode) {
+                draggedNode.classList.remove('dragging');
+                
+                // Update original positions (make deformation permanent)
+                gridNodes.forEach(node => {
+                    node.originalX = node.x;
+                    node.originalY = node.y;
+                });
+                
+                draggedNode = null;
+                dragIndex = -1;
+            }
+        });
+
+        // Feature selection system
+        function selectFeature(feature) {
+            currentFeature = feature;
+            
+            // Update UI
+            document.querySelectorAll('.feature-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.feature-btn').classList.add('active');
+            
+            // Update active feature display
+            document.getElementById('active-feature').textContent = feature.toUpperCase();
+            
+            // Reset sliders
+            document.getElementById('position-slider').value = 0;
+            document.getElementById('size-slider').value = 0;
+            document.getElementById('angle-slider').value = 0;
+            document.getElementById('position-val').textContent = '0';
+            document.getElementById('size-val').textContent = '0';
+            document.getElementById('angle-val').textContent = '0°';
+        }
+
+        // Slider controls for selected feature
+        const sliders = [
+            { id: 'position-slider', display: 'position-val', suffix: '' },
+            { id: 'size-slider', display: 'size-val', suffix: '' },
+            { id: 'angle-slider', display: 'angle-val', suffix: '°' }
+        ];
+
+        sliders.forEach(({ id, display, suffix }) => {
+            const slider = document.getElementById(id);
+            slider.addEventListener('input', () => {
+                const val = slider.value;
+                document.getElementById(display).textContent = (val > 0 ? '+' : '') + val + suffix;
+                
+                if (currentFeature) {
+                    applyFeatureAdjustment();
+                    modCount++;
+                    document.getElementById('mod-count').textContent = modCount;
+                }
+            });
+        });
+
+        // Apply adjustments based on selected feature (works with anatomical points)
+        function applyFeatureAdjustment() {
+            if (!currentFeature) return;
+            
+            const position = parseInt(document.getElementById('position-slider').value);
+            const size = parseInt(document.getElementById('size-slider').value);
+            const angle = parseInt(document.getElementById('angle-slider').value);
+            
+            // Define feature-specific point groups by label keywords
+            const featureKeywords = {
+                eyes: ['eye', 'brow'],
+                nose: ['nose', 'nostril', 'philtrum'],
+                mouth: ['lip', 'mouth'],
+                jaw: ['jaw', 'chin'],
+                cheeks: ['cheek', 'nasolabial'],
+                forehead: ['forehead', 'crown', 'temple', 'crown-arc']
+            };
+            
+            const keywords = featureKeywords[currentFeature];
+            if (!keywords) return;
+            
+            // Find all points related to this feature
+            const featurePoints = gridNodes.filter(node => 
+                keywords.some(keyword => node.label.includes(keyword))
+            );
+            
+            if (featurePoints.length === 0) return;
+            
+            // Calculate center of feature
+            const centerX = featurePoints.reduce((sum, p) => sum + p.originalX, 0) / featurePoints.length;
+            const centerY = featurePoints.reduce((sum, p) => sum + p.originalY, 0) / featurePoints.length;
+            
+            // Apply transformation to feature points
+            featurePoints.forEach(point => {
+                // Position adjustment (vertical)
+                const dy = position * 0.8;
+                
+                // Size adjustment (radial from center)
+                const dx = (point.originalX - centerX) * size * 0.02;
+                const dySize = (point.originalY - centerY) * size * 0.02;
+                
+                // Angle adjustment (rotation around center)
+                const angleRad = (angle * Math.PI) / 180;
+                const relX = point.originalX - centerX;
+                const relY = point.originalY - centerY;
+                const rotatedX = relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                const rotatedY = relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                const dxAngle = (rotatedX - relX);
+                const dyAngle = (rotatedY - relY);
+                
+                // Apply combined transformation
+                point.x = point.originalX + dx + dxAngle;
+                point.y = point.originalY + dy + dySize + dyAngle;
+            });
+            
+            drawGrid();
+        }
+
+        // Reset all adjustments
+        function resetAdjustments() {
+            // Reset grid to original positions
+            gridNodes.forEach(node => {
+                node.x = node.originalX;
+                node.y = node.originalY;
+            });
+            
+            // Reset sliders
+            document.getElementById('position-slider').value = 0;
+            document.getElementById('size-slider').value = 0;
+            document.getElementById('angle-slider').value = 0;
+            document.getElementById('position-val').textContent = '0';
+            document.getElementById('size-val').textContent = '0';
+            document.getElementById('angle-val').textContent = '0°';
+            
+            // Reset feature selection
+            document.querySelectorAll('.feature-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            currentFeature = null;
+            document.getElementById('active-feature').textContent = 'NONE';
+            
+            modCount = 0;
+            document.getElementById('mod-count').textContent = '0';
+            
+            drawGrid();
+        }
+
+        function savePreset() {
+            alert('Preset configuration saved to cloud storage (Demo)\n\nAnatomical mesh deformation and feature adjustments have been saved.');
+        }
+
+        // Initialize anatomical grid
+        drawGrid();
+        
+        // Update grid density display
+        document.getElementById('grid-density').textContent = 'ANATOMICAL';
+
+    </script>
+</body>
+</html>
