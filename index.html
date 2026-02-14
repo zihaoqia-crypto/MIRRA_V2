@@ -1075,7 +1075,7 @@
 
             <div class="hero-visual-container">
                 <div class="hero-image-wrapper">
-                    <img src="p1-1.PNG" 
+                    <img src="p1-1.png" 
                          alt="Face analysis" 
                          class="hero-face-image" 
                          id="hero-face">
@@ -1352,6 +1352,17 @@
                 heroFace.classList.remove('fade-out');
             }, 150);
         }
+
+        // 触摸支持：手机/平板长按看对比（GitHub Pages 部署后触屏设备需要）
+        optimizeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            showOptimized();
+        }, { passive: false });
+        optimizeBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            showOriginal();
+        }, { passive: false });
+        optimizeBtn.addEventListener('touchcancel', showOriginal);
 
         // Comparison slider - draggable before/after with fixed images
         const compSlider = document.getElementById('comparison-slider');
@@ -1820,5 +1831,4 @@
 
     </script>
 </body>
-
 </html>
